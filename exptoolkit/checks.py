@@ -47,3 +47,12 @@ def standardized_mean_diff(df: pd.DataFrame, covariates, arm_col: str = "arm",
         .pivot(index="covariate", columns="arm", values="smd")
         .round(4)
     )
+
+
+COVARIATE_LABELS = {
+    "recency": "Months since last purchase",
+    "history": "Spend in the past year",
+    "mens": "Bought men's items",
+    "womens": "Bought women's items",
+    "newbie": "New customer",
+}
