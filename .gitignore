@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.ipynb_checkpoints/
+
+# Secrets
+.env
+
+# Data is downloaded by scripts/download_data.py, not committed
+data/*
+!data/.gitkeep
+
+# OS
+.DS_Store
