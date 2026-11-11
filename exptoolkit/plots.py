@@ -136,3 +136,49 @@ def decision_zones_plot(econ, x_max: float = 0.30):
     ax.set_xlabel("Revenue lift per customer from the email")
     ax.set_ylabel("Profit per 1,000 emails")
     return fig, ax
+
+
+def calibration_plot(table: pd.DataFrame, metric_titles: dict):
+    """False positive rate in A/A tests by sample size, one panel per metric.
+
+    The shaded band is the range a perfect method would land in, given the
+    number of simulations.
+    """
+    metrics = list(metric_titles)
+    fig, axes = plt.subplots(1, len(metrics), figsize=(5.4 * len(metrics), 4.4), sharey=True)
+    fig.subplots_adjust(top=0.70, left=0.08, right=0.9, bottom=0.15, wspace=0.28)
+    axes = np.atleast_1d(axes)
+    y_max = max(0.1, float(table["False positive rate"].max()) * 1.15)
+
+    for ax, metric in zip(axes, metrics):
+        sub = table[table["Metric"] == metric]
+        band = sub["Expected range"].iloc[0]
+        lo, hi = [float(v.strip().rstrip("%")) / 100 for v in band.split("to")]
+        ax.axhspan(lo, hi, color=s.HIGHLIGHT, alpha=0.10, lw=0)
+        ax.axhline(0.05, color=s.HIGHLIGHT, lw=1, alpha=0.6)
+        for method, grp in sub.groupby("Method"):
+            grp = grp.sort_values("Customers per group")
+            c = s.METHOD_COLORS.get(method, s.INK)
+            ax.plot(grp["Customers per group"], grp["False positive rate"], color=c, lw=2)
+            _dot(ax, grp["Customers per group"], grp["False positive rate"], c, size=70)
+            last = grp.iloc[-1]
+            ax.annotate(method, (last["Customers per group"], last["False positive rate"]),
+                        xytext=(10, 0), textcoords="offset points", va="center",
+                        color=s.INK_2, fontsize=10)
+            ax.scatter([], [], color=c, s=70, label=method)
+        ax.set_xscale("log")
+        ax.set_xticks(sorted(sub["Customers per group"].unique()))
+        ax.xaxis.set_major_formatter(plt.FuncFormatter(lambda v, _: f"{v:,.0f}"))
+        ax.xaxis.set_minor_locator(plt.NullLocator())
+        ax.set_ylim(0, y_max)
+        ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda v, _: f"{100 * v:.0f}%"))
+        ax.tick_params(axis="y", colors=s.MUTED)
+        ax.grid(axis="y", color=s.GRID)
+        ax.set_title(metric_titles[metric], loc="left", fontsize=12, color=s.INK_2, pad=10)
+        ax.set_xlabel("Customers per group")
+    axes[0].set_ylabel("False positive rate")
+    axes[0].text(axes[0].get_xlim()[0] * 1.05, 0.05, " target 5%", color=s.HIGHLIGHT,
+                 fontsize=9.5, va="bottom")
+    axes[-1].legend(loc="lower right", bbox_to_anchor=(1.0, 1.08), ncol=2,
+                    handletextpad=0.3, columnspacing=1.2)
+    return fig, axes

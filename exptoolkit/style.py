@@ -31,6 +31,12 @@ ARM_LABELS = {
 }
 ARM_ORDER = ["control", "womens_email", "mens_email"]
 
+# Methods get their own colours so they never look like an experiment arm.
+METHOD_COLORS = {
+    "Welch t-test": "#3B8FE0",
+    "Bootstrap": "#C4831C",
+}
+
 FONT_STACK = ["Avenir Next", "Avenir", "Helvetica Neue", "DejaVu Sans"]
 FIGURE_DIR = Path(__file__).resolve().parent.parent / "docs" / "figures"
 
