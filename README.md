@@ -21,8 +21,8 @@ This toolkit treats every experiment as a purchase of information and every read
 | # | Question | Status |
 |---|---|---|
 | [01](notebooks/01_explore_hillstrom.ipynb) | Can we trust this test? | Done |
-| 02 | What do we decide before looking? | Next |
-| 03 | Do our methods actually work on this data? (A/A calibration) | Planned |
+| [02](notebooks/02_decide_before_looking.ipynb) | What do we decide before looking? | Done |
+| 03 | Do our methods actually work on this data? (A/A calibration) | Next |
 | 04 | How many customers do we need? (power by simulation) | Planned |
 | 05 | What happens if we peek every day? | Planned |
 | 06 | Did the email work, and by how much? | Planned |
@@ -51,8 +51,9 @@ jupyter notebook notebooks/
 ## Layout
 
 ```
-exptoolkit/     reusable code: data loading, checks, charts, style
+exptoolkit/     reusable code: data, decision plans, checks, charts, style
 notebooks/      one notebook per module, outputs saved
+plans/          decision plans the notebooks read
 docs/figures/   charts used in this README
 scripts/        data download
 ```

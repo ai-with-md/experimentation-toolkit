@@ -1,0 +1,49 @@
+# Decision plan for the Hillstrom email test.
+#
+# Written before the formal readout. The notebooks read this file, so the
+# decision rule cannot quietly change after the results are in.
+
+name: Hillstrom email test
+question: >
+  Should customers like these get the men's email, the women's email, or no email?
+owner: Email marketing lead
+
+arms:
+  control: No email
+  mens_email: Men's email
+  womens_email: Women's email
+control_arm: control
+
+primary_metric:
+  column: spend
+  label: Revenue per customer, two weeks after the send
+  unit: dollars
+
+secondary_metrics:
+  - column: visit
+    label: Visited the site
+  - column: conversion
+    label: Bought something
+
+guardrails:
+  - label: Unsubscribe rate
+    measured: false
+    note: Not in this dataset. In a live test this would block a send on its own.
+
+economics:
+  gross_margin: 0.35          # share of revenue kept as profit (assumption)
+  cost_per_email: 0.02        # dollars: send cost plus an allowance for list fatigue (assumption)
+  min_profit_per_1000: 20     # dollars per 1,000 emails; below this, not worth acting on
+
+decision_rule:
+  choose: highest expected profit per 1,000 emails
+  ship_if:
+    probability_best_at_least: 0.80
+    expected_loss_per_1000_at_most: 10
+  otherwise: keep sending no email and extend the test
+
+statistics:
+  alpha: 0.05
+  power: 0.80
+  multiple_comparisons: holm          # applied to secondary metrics only
+  variance_reduction_covariate: history

@@ -7,6 +7,12 @@ import pandas as pd
 from . import style as s
 
 
+def money(v: float, decimals: int = 2) -> str:
+    """Format dollars with the sign in front: -$0.05, $1,200."""
+    sign = "\u2212" if v < 0 else ""
+    return f"{sign}${abs(v):,.{decimals}f}"
+
+
 def _dot(ax, x, y, color, size=110):
     # Surface-coloured ring keeps dots readable where they overlap lines.
     ax.scatter(x, y, s=size, color=color, edgecolor=s.SURFACE, linewidth=2, zorder=4)
@@ -83,3 +89,50 @@ def group_means_plot(df: pd.DataFrame, outcomes: dict, arm_col: str = "arm"):
     axes[0].set_yticks(y, [s.ARM_LABELS[a] for a in arms])
     axes[0].invert_yaxis()
     return fig, axes
+
+
+def decision_zones_plot(econ, x_max: float = 0.30):
+    """Profit per 1,000 emails as a function of revenue lift, with decision zones.
+
+    Drawn from the plan alone, before any result is placed on it.
+    """
+    be, ww = econ.break_even_lift, econ.worthwhile_lift
+    x_min = -0.05
+    x = np.linspace(x_min, x_max, 200)
+    y = [econ.profit_per_1000(v) for v in x]
+
+    fig, ax = plt.subplots(figsize=(10, 4.6))
+    fig.subplots_adjust(top=0.74, left=0.1, right=0.97, bottom=0.14)
+    ax.grid(axis="y", color=s.GRID)
+
+    ax.axvspan(x_min, be, color=s.ARM_COLORS["control"], alpha=0.18, lw=0)
+    ax.axvspan(be, ww, color=s.ARM_COLORS["control"], alpha=0.08, lw=0)
+    ax.axvspan(ww, x_max, color=s.HIGHLIGHT, alpha=0.08, lw=0)
+    ax.axhline(0, color=s.BASELINE, lw=1)
+    ax.plot(x, y, color=s.INK, lw=2.5, zorder=3)
+
+    for xv, color in [(be, s.INK_2), (ww, s.HIGHLIGHT)]:
+        ax.axvline(xv, color=color, lw=1, alpha=0.8)
+        _dot(ax, xv, econ.profit_per_1000(xv), color, size=90)
+
+    top = max(y)
+    label_y = top * 0.92
+    ax.text((x_min + be) / 2, label_y, "Loses\nmoney", ha="center", va="top",
+            color=s.INK_2, fontsize=11, fontweight="bold")
+    ax.text((be + ww) / 2, label_y, "Pays for itself,\ntoo small\nto act on", ha="center",
+            va="top", color=s.INK_2, fontsize=10.5, fontweight="bold")
+    ax.text((ww + x_max) / 2, label_y, "Worth sending", ha="center", va="top",
+            color=s.HIGHLIGHT, fontsize=13, fontweight="bold")
+
+    ax.annotate(f"break-even  ${be:.3f}", (be, 0), xytext=(6, -22),
+                textcoords="offset points", color=s.INK_2, fontsize=10)
+    ax.annotate(f"worth it  ${ww:.3f}", (ww, econ.profit_per_1000(ww)), xytext=(8, -18),
+                textcoords="offset points", color=s.INK, fontsize=10)
+
+    ax.set_xlim(x_min, x_max)
+    ax.xaxis.set_major_formatter(plt.FuncFormatter(lambda v, _: money(v, 2)))
+    ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda v, _: money(v, 0)))
+    ax.tick_params(axis="y", colors=s.MUTED)
+    ax.set_xlabel("Revenue lift per customer from the email")
+    ax.set_ylabel("Profit per 1,000 emails")
+    return fig, ax
