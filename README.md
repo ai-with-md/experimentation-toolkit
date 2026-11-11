@@ -8,7 +8,7 @@ Each notebook answers a question a product or marketing team would actually ask,
 
 | Notebook | Question | Status |
 |---|---|---|
-| 01 Explore | What does the data look like, and was the test randomized properly? | In progress |
+| [01 Explore](notebooks/01_explore_hillstrom.ipynb) | What does the data look like, and was the test randomized properly? | Done |
 | 02 Power analysis | How many customers do we need to detect a lift we care about? | Planned |
 | 03 A/B analysis | Did the email work, and by how much? | Planned |
 | 04 Uplift modeling | Who does the email actually change? | Planned |
