@@ -22,3 +22,6 @@ dev = ["pytest"]
 
 [tool.setuptools]
 packages = ["exptoolkit"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

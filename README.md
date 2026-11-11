@@ -1,5 +1,7 @@
 # Experimentation Toolkit
 
+[![tests](https://github.com/ai-with-md/experimentation-toolkit/actions/workflows/tests.yml/badge.svg)](https://github.com/ai-with-md/experimentation-toolkit/actions/workflows/tests.yml)
+
 **Decision-first experimentation, worked end to end on real data.**
 
 ![Both emails beat no email. The men's email wins on every outcome.](docs/figures/outcomes.png)
@@ -22,8 +24,8 @@ This toolkit treats every experiment as a purchase of information and every read
 |---|---|---|
 | [01](notebooks/01_explore_hillstrom.ipynb) | Can we trust this test? | Done |
 | [02](notebooks/02_decide_before_looking.ipynb) | What do we decide before looking? | Done |
-| 03 | Do our methods actually work on this data? (A/A calibration) | Next |
-| 04 | How many customers do we need? (power by simulation) | Planned |
+| [03](notebooks/03_aa_calibration.ipynb) | Do our methods actually work on this data? (A/A calibration) | Done |
+| 04 | How many customers do we need? (power by simulation) | Next |
 | 05 | What happens if we peek every day? | Planned |
 | 06 | Did the email work, and by how much? | Planned |
 | 07 | Which email should we send, in dollars and risk? | Planned |
@@ -48,12 +50,15 @@ python scripts/download_data.py
 jupyter notebook notebooks/
 ```
 
+Run the tests with `pip install -e ".[dev]"` and then `pytest`.
+
 ## Layout
 
 ```
 exptoolkit/     reusable code: data, decision plans, checks, charts, style
 notebooks/      one notebook per module, outputs saved
 plans/          decision plans the notebooks read
+tests/          unit tests, run on every push
 docs/figures/   charts used in this README
 scripts/        data download
 ```
