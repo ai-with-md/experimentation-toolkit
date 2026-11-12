@@ -182,3 +182,52 @@ def calibration_plot(table: pd.DataFrame, metric_titles: dict):
     axes[-1].legend(loc="lower right", bbox_to_anchor=(1.0, 1.08), ncol=2,
                     handletextpad=0.3, columnspacing=1.2)
     return fig, axes
+
+
+def power_curves_plot(panels: dict, actual_n: int, target: float = 0.8):
+    """Power by group size: simulation on real data (dots) vs textbook formula (line).
+
+    `panels` maps a panel title to a dict with keys `sizes`, `simulated` (power
+    at each size), `formula` (callable n -> power) and `n_needed` (simulated
+    size that reaches the target).
+    """
+    sim_color = s.METHOD_COLORS["Welch t-test"]
+    fig, axes = plt.subplots(1, len(panels), figsize=(5.6 * len(panels), 4.6), sharey=True)
+    fig.subplots_adjust(top=0.70, left=0.08, right=0.97, bottom=0.15, wspace=0.12)
+    axes = np.atleast_1d(axes)
+
+    for ax, (title, p) in zip(axes, panels.items()):
+        sizes = np.asarray(p["sizes"], float)
+        grid = np.geomspace(sizes.min(), sizes.max(), 200)
+        ax.axhline(target, color=s.HIGHLIGHT, lw=1, alpha=0.7)
+        ax.axvline(actual_n, color=s.ARM_COLORS["control"], lw=1.5)
+        ax.plot(grid, p["formula"](grid), color=s.INK_2, lw=1.5, alpha=0.8)
+        ax.plot(sizes, p["simulated"], color=sim_color, lw=2)
+        _dot(ax, sizes, p["simulated"], sim_color, size=60)
+
+        need = p["n_needed"]
+        ax.scatter([need], [target], s=150, color=s.HIGHLIGHT, edgecolor=s.SURFACE,
+                   linewidth=2, zorder=5)
+        ax.annotate(f"needs {need / 1000:,.0f}K\nper group", (need, target), xytext=(-12, 14),
+                    textcoords="offset points", ha="right", color=s.INK, fontsize=10.5,
+                    fontweight="bold")
+        ax.annotate("this test\n21K per group", (actual_n, 0.02), xytext=(6, 0),
+                    textcoords="offset points", color=s.INK_2, fontsize=9.5, va="bottom")
+
+        ax.set_xscale("log")
+        ax.set_xticks([10_000, 20_000, 50_000, 100_000, 200_000])
+        ax.xaxis.set_major_formatter(plt.FuncFormatter(lambda v, _: f"{v / 1000:,.0f}K"))
+        ax.xaxis.set_minor_locator(plt.NullLocator())
+        ax.set_ylim(0, 1.02)
+        ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda v, _: f"{100 * v:.0f}%"))
+        ax.tick_params(axis="y", colors=s.MUTED)
+        ax.grid(axis="y", color=s.GRID)
+        ax.set_title(title, loc="left", fontsize=12, color=s.INK_2, pad=10)
+        ax.set_xlabel("Customers per group")
+
+    axes[0].set_ylabel("Chance of detecting the lift")
+    axes[-1].plot([], [], color=sim_color, lw=2, marker="o", label="Simulated on real data")
+    axes[-1].plot([], [], color=s.INK_2, lw=1.5, label="Textbook formula")
+    axes[-1].legend(loc="lower right", bbox_to_anchor=(1.0, 1.08), ncol=2,
+                    handletextpad=0.4, columnspacing=1.4)
+    return fig, axes

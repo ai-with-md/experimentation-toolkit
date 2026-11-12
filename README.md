@@ -25,8 +25,8 @@ This toolkit treats every experiment as a purchase of information and every read
 | [01](notebooks/01_explore_hillstrom.ipynb) | Can we trust this test? | Done |
 | [02](notebooks/02_decide_before_looking.ipynb) | What do we decide before looking? | Done |
 | [03](notebooks/03_aa_calibration.ipynb) | Do our methods actually work on this data? (A/A calibration) | Done |
-| 04 | How many customers do we need? (power by simulation) | Next |
-| 05 | What happens if we peek every day? | Planned |
+| [04](notebooks/04_power_by_simulation.ipynb) | How many customers do we need? (power by simulation) | Done |
+| 05 | What happens if we peek every day? | Next |
 | 06 | Did the email work, and by how much? | Planned |
 | 07 | Which email should we send, in dollars and risk? | Planned |
 | 08 | Who should get the email at all? (uplift and targeting) | Planned |
