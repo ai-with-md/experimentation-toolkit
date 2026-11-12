@@ -5,8 +5,19 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "exptoolkit"
 version = "0.1.0"
-description = "Experiment design and causal inference on public data"
+description = "Decision-first A/B testing: A/A calibration, power by simulation, sequential testing and causal inference"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [{name = "Meenal Asesh"}]
 requires-python = ">=3.9"
+keywords = ["ab-testing", "experimentation", "power-analysis", "sample-size", "sequential-testing",
+            "causal-inference", "uplift-modeling", "statistics", "a/a-test"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+]
 dependencies = [
     "pandas>=2.0",
     "numpy>=1.24",
@@ -15,6 +26,10 @@ dependencies = [
     "matplotlib>=3.7",
     "pyyaml>=6.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/ai-with-md/experimentation-toolkit"
+Issues = "https://github.com/ai-with-md/experimentation-toolkit/issues"
 
 [project.optional-dependencies]
 notebooks = ["jupyter", "nbformat", "nbconvert", "ipykernel"]
