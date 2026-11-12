@@ -231,3 +231,59 @@ def power_curves_plot(panels: dict, actual_n: int, target: float = 0.8):
     axes[-1].legend(loc="lower right", bbox_to_anchor=(1.0, 1.08), ncol=2,
                     handletextpad=0.4, columnspacing=1.4)
     return fig, axes
+
+
+def peeking_plot(naive_bar, sequential_bar, naive_fpr, sequential_fpr, fixed_fpr,
+                 alpha: float = 0.05, day_label: str = "Day"):
+    """Left: the bar a result must clear on each day. Right: false alarms by day."""
+    days = np.arange(1, len(naive_bar) + 1)
+    sc = s.STRATEGY_COLORS
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4.8))
+    fig.subplots_adjust(top=0.70, left=0.07, right=0.88, bottom=0.14, wspace=0.42)
+
+    for ax in (ax1, ax2):
+        ax.grid(axis="y", color=s.GRID)
+        ax.set_xticks([1, 4, 7, 10, 14])
+        ax.set_xlim(0.5, len(days) + 0.5)
+        ax.set_xlabel(day_label)
+        ax.tick_params(axis="y", colors=s.MUTED)
+
+    ax1.plot(days, naive_bar, color=sc["naive"], lw=2)
+    ax1.plot(days, sequential_bar, color=sc["sequential"], lw=2)
+    _dot(ax1, days, sequential_bar, sc["sequential"], size=45)
+    ax1.annotate("Peek daily", (days[-1], naive_bar[-1]), xytext=(8, -12),
+                 textcoords="offset points", color=s.INK_2, fontsize=10)
+    ax1.annotate("Sequential", (days[-1], sequential_bar[-1]), xytext=(8, 6),
+                 textcoords="offset points", color=s.INK_2, fontsize=10)
+    ax1.set_ylim(0, max(sequential_bar) * 1.1)
+    ax1.set_ylabel("Evidence needed (z score)")
+    ax1.set_title("The bar to call a winner", loc="left", fontsize=12, color=s.INK_2, pad=10)
+
+    ax2.axhline(alpha, color=s.HIGHLIGHT, lw=1, alpha=0.7)
+    ax2.text(0.7, alpha, f" promised {alpha:.0%}", color=s.HIGHLIGHT, fontsize=9.5, va="bottom")
+    ax2.plot(days, naive_fpr, color=sc["naive"], lw=2)
+    _dot(ax2, days, naive_fpr, sc["naive"], size=45)
+    ax2.plot(days, sequential_fpr, color=sc["sequential"], lw=2)
+    _dot(ax2, days, sequential_fpr, sc["sequential"], size=45)
+    _dot(ax2, days[-1], fixed_fpr, sc["fixed"], size=110)
+    ax2.annotate(f"Peek daily  {naive_fpr[-1]:.0%}", (days[-1], naive_fpr[-1]), xytext=(10, 0),
+                 textcoords="offset points", va="center", color=s.INK, fontsize=10.5,
+                 fontweight="bold")
+    ax2.annotate(f"Sequential  {sequential_fpr[-1]:.1%}", (days[-1], sequential_fpr[-1]),
+                 xytext=(10, 8), textcoords="offset points", va="center", color=s.INK_2,
+                 fontsize=10)
+    ax2.annotate(f"Look once  {fixed_fpr:.1%}", (days[-1], fixed_fpr), xytext=(10, -9),
+                 textcoords="offset points", va="center", color=s.INK_2, fontsize=10)
+    ax2.set_ylim(0, max(naive_fpr) * 1.15)
+    ax2.yaxis.set_major_formatter(plt.FuncFormatter(lambda v, _: f"{100 * v:.0f}%"))
+    ax2.set_ylabel("Tests with a false winner so far")
+    ax2.set_title("False alarms when nothing changed", loc="left", fontsize=12,
+                  color=s.INK_2, pad=10)
+
+    for key, label in [("naive", "Peek daily, stop at first win"),
+                       ("sequential", "Sequential (O'Brien-Fleming)"),
+                       ("fixed", "Look once at the end")]:
+        ax2.scatter([], [], color=sc[key], s=60, label=label)
+    ax2.legend(loc="lower right", bbox_to_anchor=(1.0, 1.08), ncol=3, handletextpad=0.3,
+               columnspacing=1.2)
+    return fig, (ax1, ax2)

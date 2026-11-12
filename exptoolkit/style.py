@@ -31,6 +31,13 @@ ARM_LABELS = {
 }
 ARM_ORDER = ["control", "womens_email", "mens_email"]
 
+# Ways of running a test (stopping rules) in notebook 05.
+STRATEGY_COLORS = {
+    "naive": "#C4831C",
+    "sequential": "#3B8FE0",
+    "fixed": "#55535F",
+}
+
 # Methods get their own colours so they never look like an experiment arm.
 METHOD_COLORS = {
     "Welch t-test": "#3B8FE0",
