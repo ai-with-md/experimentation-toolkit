@@ -81,6 +81,7 @@ def use_style() -> None:
         "legend.frameon": False,
         "legend.labelcolor": INK_2,
         "lines.solid_capstyle": "round",
+        "text.parse_math": False,  # so dollar signs in labels print as dollars
     })
 
 

@@ -287,3 +287,52 @@ def peeking_plot(naive_bar, sequential_bar, naive_fpr, sequential_fpr, fixed_fpr
     ax2.legend(loc="lower right", bbox_to_anchor=(1.0, 1.08), ncol=3, handletextpad=0.3,
                columnspacing=1.2)
     return fig, (ax1, ax2)
+
+
+def decision_map_plot(econ, results: dict, x_max: float = None):
+    """Place measured revenue lifts (with intervals) on the plan's decision zones.
+
+    `results` maps an arm name to (effect, ci_low, ci_high) in revenue per customer.
+    The top axis shows the same scale as profit per 1,000 emails.
+    """
+    be, ww = econ.break_even_lift, econ.worthwhile_lift
+    x_max = x_max or max(r[2] for r in results.values()) * 1.25
+    x_min = -0.1
+    arms = list(results)
+
+    fig, ax = plt.subplots(figsize=(10, 1.1 * len(arms) + 3.2))
+    fig.subplots_adjust(top=0.66, left=0.16, right=0.97, bottom=0.18)
+    ax.grid(axis="x", color=s.GRID)
+    ax.axvspan(x_min, be, color=s.ARM_COLORS["control"], alpha=0.22, lw=0)
+    ax.axvspan(be, ww, color=s.ARM_COLORS["control"], alpha=0.10, lw=0)
+    ax.axvspan(ww, x_max, color=s.HIGHLIGHT, alpha=0.07, lw=0)
+    ax.axvline(ww, color=s.HIGHLIGHT, lw=1, alpha=0.8)
+    ax.axvline(0, color=s.BASELINE, lw=1)
+
+    y = np.arange(len(arms))
+    for yi, arm in zip(y, arms):
+        eff, lo, hi = results[arm]
+        c = s.ARM_COLORS[arm]
+        ax.plot([lo, hi], [yi, yi], color=c, lw=6, solid_capstyle="round", zorder=3)
+        _dot(ax, eff, yi, c, size=170)
+        ax.annotate(f"+{money(eff)} per customer  ·  {money(econ.profit_per_1000(eff), 0)} per 1,000 emails",
+                    (hi, yi), xytext=(12, 0), textcoords="offset points", va="center",
+                    color=s.INK, fontsize=10.5, fontweight="bold")
+
+    ax.text(ww + 0.01, len(arms) - 0.45, "Worth sending", color=s.HIGHLIGHT, fontsize=12,
+            fontweight="bold", va="center")
+    ax.text((x_min + be) / 2, len(arms) - 0.45, "Loses\nmoney", color=s.INK_2, fontsize=9,
+            ha="center", va="center")
+    ax.set_yticks(y, [s.ARM_LABELS[a] for a in arms])
+    ax.set_ylim(-0.6, len(arms) - 0.1)
+    ax.set_xlim(x_min, x_max)
+    ax.xaxis.set_major_formatter(plt.FuncFormatter(lambda v, _: money(v, 2)))
+    ax.set_xlabel("Revenue lift per customer vs no email (bar: 95% interval)")
+
+    top = ax.secondary_xaxis("top", functions=(econ.profit_per_1000,
+                                               lambda p: (p / 1000 + econ.cost_per_email) / econ.gross_margin))
+    top.xaxis.set_major_formatter(plt.FuncFormatter(lambda v, _: money(v, 0)))
+    top.tick_params(colors=s.MUTED, length=0)
+    top.set_xlabel("Profit per 1,000 emails", color=s.INK_2)
+    top.spines["top"].set_visible(False)
+    return fig, ax

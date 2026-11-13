@@ -16,6 +16,7 @@
 | Switch to the bootstrap because revenue is skewed | **9%** false alarms with 1,000 customers per group | [03](notebooks/03_aa_calibration.ipynb) |
 | Size the test with the textbook formula | Too optimistic on revenue: 161K per group vs **173K** by simulation | [04](notebooks/04_power_by_simulation.ipynb) |
 | Read "not significant" as "no effect" | This test would have missed a worthwhile lift **5 times out of 6** | [04](notebooks/04_power_by_simulation.ipynb) |
+| Expect CUPED to shrink the noise | A year of purchase history removed **under 0.1%** of revenue variance | [06](notebooks/06_readout.ipynb) |
 
 Every number comes from simulation on real customer data, not from a formula's assumptions.
 
@@ -67,8 +68,8 @@ obf_boundaries(n_looks=14)
 | [03](notebooks/03_aa_calibration.ipynb) | Do our methods actually work on this data? (A/A calibration) | Done |
 | [04](notebooks/04_power_by_simulation.ipynb) | How many customers do we need? (power by simulation) | Done |
 | [05](notebooks/05_peeking.ipynb) | What happens if we peek every day? (sequential testing) | Done |
-| 06 | Did the email work, and by how much? (CUPED, multiple comparisons) | Next |
-| 07 | Which email should we send, in dollars and risk? | Planned |
+| [06](notebooks/06_readout.ipynb) | Did the email work, and by how much? (CUPED, multiple comparisons) | Done |
+| 07 | Which email should we send, in dollars and risk? | Next |
 | 08 | Who should get the email at all? (uplift and targeting) | Planned |
 | 09 | What if we could not randomize? (difference-in-differences, synthetic controls) | Planned |
 
@@ -97,7 +98,7 @@ Run the tests with `pytest`.
 ## Layout
 
 ```
-exptoolkit/     reusable code: data, decision plans, checks, power, sequential tests, charts
+exptoolkit/     reusable code: data, decision plans, checks, power, sequential tests, readout, charts
 notebooks/      one notebook per module, outputs saved
 plans/          decision plans the notebooks read
 tests/          unit tests, run on every push
