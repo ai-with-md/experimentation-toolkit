@@ -69,8 +69,8 @@ obf_boundaries(n_looks=14)
 | [04](notebooks/04_power_by_simulation.ipynb) | How many customers do we need? (power by simulation) | Done |
 | [05](notebooks/05_peeking.ipynb) | What happens if we peek every day? (sequential testing) | Done |
 | [06](notebooks/06_readout.ipynb) | Did the email work, and by how much? (CUPED, multiple comparisons) | Done |
-| 07 | Which email should we send, in dollars and risk? | Next |
-| 08 | Who should get the email at all? (uplift and targeting) | Planned |
+| [07](notebooks/07_decision.ipynb) | Which email should we send, in dollars and risk? ([decision memo](reports/decision_memo.md)) | Done |
+| 08 | Who should get the email at all? (uplift and targeting) | Next |
 | 09 | What if we could not randomize? (difference-in-differences, synthetic controls) | Planned |
 
 New modules get added over time. Each one adds reusable code to `exptoolkit/` and its own numbered notebook.
@@ -98,10 +98,11 @@ Run the tests with `pytest`.
 ## Layout
 
 ```
-exptoolkit/     reusable code: data, decision plans, checks, power, sequential tests, readout, charts
+exptoolkit/     reusable code: data, decision plans, checks, power, sequential tests, readout, decisions, charts
 notebooks/      one notebook per module, outputs saved
 plans/          decision plans the notebooks read
 tests/          unit tests, run on every push
+reports/        decision memos written by the notebooks
 docs/figures/   charts used in this README
 scripts/        data download
 ```

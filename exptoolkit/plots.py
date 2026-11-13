@@ -336,3 +336,93 @@ def decision_map_plot(econ, results: dict, x_max: float = None):
     top.set_xlabel("Profit per 1,000 emails", color=s.INK_2)
     top.spines["top"].set_visible(False)
     return fig, ax
+
+
+def profit_distribution_plot(draws: pd.DataFrame, table: pd.DataFrame, min_profit: float,
+                             control_arm: str = "control"):
+    """Distribution of profit per 1,000 emails for each email, vs sending nothing."""
+    from scipy.stats import gaussian_kde
+
+    arms = [a for a in s.ARM_ORDER if a in draws.columns and a != control_arm]
+    lo = min(draws[arms].quantile(0.001).min(), 0) - 20
+    hi = draws[arms].quantile(0.999).max() + 20
+    grid = np.linspace(lo, hi, 400)
+
+    fig, ax = plt.subplots(figsize=(10, 4.6))
+    fig.subplots_adjust(top=0.72, left=0.06, right=0.97, bottom=0.14)
+    ax.grid(axis="x", color=s.GRID)
+    ax.grid(axis="y", visible=False)
+    ax.axvspan(lo, 0, color=s.ARM_COLORS["control"], alpha=0.18, lw=0)
+    ax.axvline(0, color=s.BASELINE, lw=1)
+    ax.axvline(min_profit, color=s.HIGHLIGHT, lw=1, alpha=0.8)
+
+    peak = 0
+    for arm in arms:
+        dens = gaussian_kde(draws[arm])(grid)
+        peak = max(peak, dens.max())
+        c = s.ARM_COLORS[arm]
+        ax.fill_between(grid, dens, color=c, alpha=0.18, lw=0)
+        ax.plot(grid, dens, color=c, lw=2)
+        m = table.loc[arm, "expected_profit"]
+        ax.annotate(f"{s.ARM_LABELS[arm]}\n{money(m, 0)} expected · {table.loc[arm, 'prob_best']:.0%} chance best",
+                    (m, dens.max()), xytext=(0, 12), textcoords="offset points", ha="center",
+                    color=s.INK, fontsize=10.5, fontweight="bold")
+    ax.text(lo + (0 - lo) / 2, peak * 0.15, "Loses\nmoney", ha="center", color=s.INK_2, fontsize=9.5)
+    ax.text(min_profit, peak * 1.32, f"  worth acting on: {money(min_profit, 0)}", color=s.HIGHLIGHT,
+            fontsize=9.5, va="top")
+    ax.set_ylim(0, peak * 1.38)
+    ax.set_yticks([])
+    ax.spines["left"].set_visible(False)
+    ax.set_xlim(lo, hi)
+    ax.xaxis.set_major_formatter(plt.FuncFormatter(lambda v, _: money(v, 0)))
+    ax.set_xlabel("Profit per 1,000 emails, compared with sending nothing")
+    return fig, ax
+
+
+def sensitivity_map_plot(sens: pd.DataFrame, current_margin: float, current_cost: float):
+    """Which decision the plan's rule gives across margin and email-cost assumptions."""
+    from matplotlib.colors import ListedColormap
+    from matplotlib.patches import Patch
+
+    def outcome(r):
+        if not r["ship"]:
+            return "test"
+        return r["choice"]
+
+    sens = sens.assign(outcome=sens.apply(outcome, axis=1))
+    order = ["mens_email", "womens_email", "control", "test"]
+    colors = [s.ARM_COLORS["mens_email"], s.ARM_COLORS["womens_email"],
+              s.ARM_COLORS["control"], "#2A2933"]
+    labels = {"mens_email": "Send the men's email", "womens_email": "Send the women's email",
+              "control": "Send nothing", "test": "Not sure yet: keep testing"}
+    margins = np.sort(sens["margin"].unique())
+    costs = np.sort(sens["cost"].unique())
+    grid = (sens.assign(code=sens["outcome"].map(order.index))
+            .pivot(index="margin", columns="cost", values="code").loc[margins, costs].to_numpy())
+
+    fig, ax = plt.subplots(figsize=(10, 5.2))
+    fig.subplots_adjust(top=0.72, left=0.1, right=0.97, bottom=0.13)
+    ax.grid(False)
+    dm, dc = np.diff(margins).mean(), np.diff(costs).mean()
+    ax.pcolormesh(np.append(costs - dc / 2, costs[-1] + dc / 2),
+                  np.append(margins - dm / 2, margins[-1] + dm / 2), grid,
+                  cmap=ListedColormap(colors), vmin=-0.5, vmax=len(order) - 0.5,
+                  edgecolors=s.SURFACE, linewidth=2)
+    ax.scatter([current_cost], [current_margin], s=260, facecolor="none", edgecolor=s.HIGHLIGHT,
+               linewidth=2.5, zorder=4)
+    ax.annotate("the plan's assumptions", (current_cost, current_margin), xytext=(22, 0),
+                textcoords="offset points", color=s.INK, fontsize=10, va="center",
+                fontweight="bold",
+                bbox=dict(boxstyle="round,pad=0.35", fc=s.SURFACE, ec=s.HIGHLIGHT, lw=1))
+    ax.xaxis.set_major_formatter(plt.FuncFormatter(lambda v, _: money(v, 2)))
+    ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda v, _: f"{100 * v:.0f}%"))
+    ax.tick_params(axis="y", colors=s.INK_2)
+    ax.set_xlabel("Cost per email (send cost plus list fatigue)")
+    ax.set_ylabel("Gross margin")
+    present = [o for o in order if o in set(sens["outcome"])]
+    ax.legend(handles=[Patch(color=colors[order.index(o)], label=labels[o]) for o in present],
+              loc="lower right", bbox_to_anchor=(1.0, 1.02), ncol=len(present), frameon=False,
+              handlelength=1.2, columnspacing=1.2)
+    for spine in ax.spines.values():
+        spine.set_visible(False)
+    return fig, ax
