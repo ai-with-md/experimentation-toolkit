@@ -10,8 +10,7 @@ __pycache__/
 .env
 
 # Data is downloaded by scripts/download_data.py, not committed
-data/*
-!data/.gitkeep
+data/
 
 # OS
 .DS_Store
