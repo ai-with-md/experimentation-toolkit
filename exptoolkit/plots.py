@@ -426,3 +426,84 @@ def sensitivity_map_plot(sens: pd.DataFrame, current_margin: float, current_cost
     for spine in ax.spines.values():
         spine.set_visible(False)
     return fig, ax
+
+
+def segment_lift_plot(rows: pd.DataFrame, arm: str, break_even: float, worthwhile: float):
+    """Lift with 95% interval for each customer segment, against the plan's thresholds.
+
+    `rows` has columns label, effect, ci_low, ci_high, group (rows are drawn in order).
+    """
+    c = s.ARM_COLORS[arm]
+    n = len(rows)
+    fig, ax = plt.subplots(figsize=(10, 0.36 * n + 2.6))
+    fig.subplots_adjust(top=1 - 1.25 / (0.36 * n + 2.6), left=0.27, right=0.97, bottom=0.08)
+    ax.grid(axis="x", color=s.GRID)
+    ax.grid(axis="y", visible=False)
+    lo_lim = min(rows["ci_low"].min(), 0) - 0.2
+    ax.axvspan(lo_lim, break_even, color=s.ARM_COLORS["control"], alpha=0.18, lw=0)
+    ax.axvline(worthwhile, color=s.HIGHLIGHT, lw=1, alpha=0.8)
+    ax.axvline(0, color=s.BASELINE, lw=1)
+    y = np.arange(n)
+    for yi, (_, r) in zip(y, rows.iterrows()):
+        ax.plot([r["ci_low"], r["ci_high"]], [yi, yi], color=c, lw=3, alpha=0.85,
+                solid_capstyle="round")
+        _dot(ax, r["effect"], yi, c, size=60)
+    groups = rows["group"].tolist()
+    for i in range(1, n):
+        if groups[i] != groups[i - 1]:
+            ax.axhline(i - 0.5, color=s.GRID, lw=1)
+    ax.set_yticks(y, rows["label"])
+    ax.set_ylim(n - 0.4, -0.8)
+    ax.set_xlim(lo_lim, rows["ci_high"].max() + 0.2)
+    ax.text(worthwhile, -0.75, f"  worth sending from {money(worthwhile, 3)}", color=s.HIGHLIGHT,
+            fontsize=9.5, va="top")
+    ax.xaxis.set_major_formatter(plt.FuncFormatter(lambda v, _: money(v, 2)))
+    ax.set_xlabel("Revenue lift per customer from the email (line: 95% interval)")
+    return fig, ax
+
+
+def qini_plot(curves: dict):
+    """Qini curves: extra revenue per customer as more customers are targeted, by ranking."""
+    fig, ax = plt.subplots(figsize=(10, 4.8))
+    fig.subplots_adjust(top=0.74, left=0.1, right=0.97, bottom=0.14)
+    ax.grid(axis="y", color=s.GRID)
+    for name, (shares, curve) in curves.items():
+        col = s.MODEL_COLORS.get(name, s.INK)
+        # Every curve ends at the same point (everyone emailed), so the legend names them.
+        if name == "Random":
+            ax.plot(shares, shares * curve[-1], color=col, lw=2)
+            continue
+        ax.plot(shares, curve, color=col, lw=2)
+    ax.set_xlim(0, 1)
+    ax.xaxis.set_major_formatter(plt.FuncFormatter(lambda v, _: f"{100 * v:.0f}%"))
+    ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda v, _: money(v, 2)))
+    ax.tick_params(axis="y", colors=s.MUTED)
+    ax.set_xlabel("Share of customers emailed, best-ranked first")
+    ax.set_ylabel("Extra revenue per customer")
+    for name in curves:
+        ax.plot([], [], color=s.MODEL_COLORS.get(name, s.INK), lw=2, label=name)
+    ax.legend(loc="lower right", bbox_to_anchor=(1.0, 1.04), ncol=len(curves),
+              handlelength=1.4, columnspacing=1.2)
+    return fig, ax
+
+
+def stability_plot(results: dict):
+    """Qini coefficient from repeated random splits, one row per approach."""
+    names = list(results)
+    fig, ax = plt.subplots(figsize=(10, 0.8 * len(names) + 2.4))
+    fig.subplots_adjust(top=0.70, left=0.2, right=0.97, bottom=0.18)
+    ax.grid(axis="x", color=s.GRID)
+    ax.grid(axis="y", visible=False)
+    ax.axvline(0, color=s.HIGHLIGHT, lw=1, alpha=0.8)
+    rng = np.random.default_rng(0)
+    for yi, name in enumerate(names):
+        vals = np.asarray(results[name])
+        jitter = rng.uniform(-0.12, 0.12, len(vals))
+        col = s.MODEL_COLORS.get(name, s.INK)
+        ax.scatter(vals, yi + jitter, s=60, color=col, edgecolor=s.SURFACE, linewidth=1.5, zorder=3)
+    ax.set_yticks(range(len(names)), names)
+    ax.set_ylim(len(names) - 0.5, -0.5)
+    ax.text(0, -0.48, "  no better than random", color=s.HIGHLIGHT, fontsize=9.5, va="bottom")
+    ax.set_xlabel("Qini score on unseen customers (above zero: better than random)")
+    return fig, ax
+

@@ -31,6 +31,14 @@ ARM_LABELS = {
 }
 ARM_ORDER = ["control", "womens_email", "mens_email"]
 
+# Targeting approaches in notebooks 08 and 09.
+MODEL_COLORS = {
+    "T-learner": "#3B8FE0",
+    "X-learner": "#C4831C",
+    "Past spend rule": "#F4F1EA",
+    "Random": "#55535F",
+}
+
 # Ways of running a test (stopping rules) in notebook 05.
 STRATEGY_COLORS = {
     "naive": "#C4831C",

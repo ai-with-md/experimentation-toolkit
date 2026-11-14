@@ -17,6 +17,7 @@
 | Size the test with the textbook formula | Too optimistic on revenue: 161K per group vs **173K** by simulation | [04](notebooks/04_power_by_simulation.ipynb) |
 | Read "not significant" as "no effect" | This test would have missed a worthwhile lift **5 times out of 6** | [04](notebooks/04_power_by_simulation.ipynb) |
 | Expect CUPED to shrink the noise | A year of purchase history removed **under 0.1%** of revenue variance | [06](notebooks/06_readout.ipynb) |
+| Build an uplift model to target who gets the email | Two uplift models ranked customers **no better than random** | [08](notebooks/08_uplift.ipynb) |
 
 Every number comes from simulation on real customer data, not from a formula's assumptions.
 
@@ -70,8 +71,9 @@ obf_boundaries(n_looks=14)
 | [05](notebooks/05_peeking.ipynb) | What happens if we peek every day? (sequential testing) | Done |
 | [06](notebooks/06_readout.ipynb) | Did the email work, and by how much? (CUPED, multiple comparisons) | Done |
 | [07](notebooks/07_decision.ipynb) | Which email should we send, in dollars and risk? ([decision memo](reports/decision_memo.md)) | Done |
-| 08 | Who should get the email at all? (uplift and targeting) | Next |
-| 09 | What if we could not randomize? (difference-in-differences, synthetic controls) | Planned |
+| [08](notebooks/08_uplift.ipynb) | Who does the email actually change? (uplift models, Qini curves) | Done |
+| 09 | Who should get the email at all? (targeting policy in dollars) | Next |
+| 10 | What if we could not randomize? (difference-in-differences, synthetic controls) | Planned |
 
 New modules get added over time. Each one adds reusable code to `exptoolkit/` and its own numbered notebook.
 
@@ -98,7 +100,7 @@ Run the tests with `pytest`.
 ## Layout
 
 ```
-exptoolkit/     reusable code: data, decision plans, checks, power, sequential tests, readout, decisions, charts
+exptoolkit/     reusable code: data, decision plans, checks, power, sequential tests, readout, decisions, uplift, charts
 notebooks/      one notebook per module, outputs saved
 plans/          decision plans the notebooks read
 tests/          unit tests, run on every push
