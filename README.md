@@ -8,6 +8,8 @@
 
 ![Checking every day turns a 5% false alarm rate into 21%](docs/figures/peeking.png)
 
+**New here?** Read the one-page [decision memo](reports/decision_memo.md) for the answer a business would act on, then [notebook 05](notebooks/05_peeking.ipynb) for the most surprising result.
+
 ## What most A/B tests get wrong, measured on real data
 
 | Common practice | What happened on real customers | Notebook |
@@ -59,23 +61,30 @@ simulate_power(control, revenue_lift=0.10, n_per_arm=20_000)
 
 # 4. Checking daily for two weeks? Use these thresholds instead of 1.96.
 obf_boundaries(n_looks=14)
+
+# 5. A policy you could not randomize? Build a synthetic comparison group.
+from exptoolkit.causal import synthetic_control
+result = synthetic_control(panel, treated="California", start=1989)   # panel: years x units
+result.weights, result.average_effect
 ```
 
 ## Modules
 
-| # | Question | Status |
+Eleven modules, each a question a team actually asks, each with its own notebook.
+
+| # | Question | Methods |
 |---|---|---|
-| [01](notebooks/01_explore_hillstrom.ipynb) | Can we trust this test? | Done |
-| [02](notebooks/02_decide_before_looking.ipynb) | What do we decide before looking? | Done |
-| [03](notebooks/03_aa_calibration.ipynb) | Do our methods actually work on this data? (A/A calibration) | Done |
-| [04](notebooks/04_power_by_simulation.ipynb) | How many customers do we need? (power by simulation) | Done |
-| [05](notebooks/05_peeking.ipynb) | What happens if we peek every day? (sequential testing) | Done |
-| [06](notebooks/06_readout.ipynb) | Did the email work, and by how much? (CUPED, multiple comparisons) | Done |
-| [07](notebooks/07_decision.ipynb) | Which email should we send, in dollars and risk? ([decision memo](reports/decision_memo.md)) | Done |
-| [08](notebooks/08_uplift.ipynb) | Who does the email actually change? (uplift models, Qini curves) | Done |
-| [09](notebooks/09_targeting_policy.ipynb) | Who should get the email at all? (targeting policy in dollars) | Done |
-| [10](notebooks/10_difference_in_differences.ipynb) | What if we could not randomize? (difference-in-differences, event study) | Done |
-| [11](notebooks/11_synthetic_control.ipynb) | A better comparison: synthetic control with placebo tests | Done |
+| [01](notebooks/01_explore_hillstrom.ipynb) | Can we trust this test? | Sample ratio check, covariate balance |
+| [02](notebooks/02_decide_before_looking.ipynb) | What do we decide before looking? | Decision plan as code, break-even economics |
+| [03](notebooks/03_aa_calibration.ipynb) | Do our methods actually work on this data? | A/A calibration of the t-test and bootstrap |
+| [04](notebooks/04_power_by_simulation.ipynb) | How many customers do we need? | Power by simulation vs the textbook formula |
+| [05](notebooks/05_peeking.ipynb) | What happens if we peek every day? | Sequential testing (O'Brien-Fleming) |
+| [06](notebooks/06_readout.ipynb) | Did the email work, and by how much? | CUPED, Holm correction, three estimators |
+| [07](notebooks/07_decision.ipynb) | Which email should we send, in dollars and risk? | Bayesian bootstrap, expected loss, sensitivity, [decision memo](reports/decision_memo.md) |
+| [08](notebooks/08_uplift.ipynb) | Who does the email actually change? | T-learner, X-learner, Qini curves, stability |
+| [09](notebooks/09_targeting_policy.ipynb) | Who should get the email at all? | Policy value in dollars, inverse propensity weighting |
+| [10](notebooks/10_difference_in_differences.ipynb) | What if we could not randomize? | Difference-in-differences, event study, placebo in time |
+| [11](notebooks/11_synthetic_control.ipynb) | Can we build a better comparison? | Synthetic control, placebo states, leave-one-out |
 
 New modules get added over time. Each one adds reusable code to `exptoolkit/` and its own numbered notebook.
 
