@@ -507,3 +507,49 @@ def stability_plot(results: dict):
     ax.set_xlabel("Qini score on unseen customers (above zero: better than random)")
     return fig, ax
 
+
+def policy_plot(table: pd.DataFrame, best: str):
+    """Profit per 1,000 customers for each targeting policy, with 95% intervals."""
+    names = list(table.index)
+    fig, ax = plt.subplots(figsize=(10, 0.62 * len(names) + 2.6))
+    fig.subplots_adjust(top=1 - 1.25 / (0.62 * len(names) + 2.6), left=0.28, right=0.97, bottom=0.16)
+    ax.grid(axis="x", color=s.GRID)
+    ax.grid(axis="y", visible=False)
+    ax.axvline(0, color=s.BASELINE, lw=1)
+    for yi, name in enumerate(names):
+        r = table.loc[name]
+        col = s.HIGHLIGHT if name == best else s.INK_2
+        ax.plot([r["low"], r["high"]], [yi, yi], color=col, lw=4, solid_capstyle="round",
+                alpha=0.9)
+        _dot(ax, r["profit"], yi, col, size=110)
+        ax.annotate(f"{money(r['profit'], 0)}  ·  emails {r['share_sent']:.0%}", (r["high"], yi),
+                    xytext=(10, 0), textcoords="offset points", va="center", color=s.INK,
+                    fontsize=10, fontweight="bold" if name == best else "normal")
+    ax.set_yticks(range(len(names)), names)
+    ax.set_ylim(len(names) - 0.4, -0.6)
+    ax.set_xlim(min(table["low"].min(), 0) - 20, table["high"].max() * 1.45)
+    ax.xaxis.set_major_formatter(plt.FuncFormatter(lambda v, _: money(v, 0)))
+    ax.set_xlabel("Profit per 1,000 customers vs emailing nobody (line: 95% interval)")
+    return fig, ax
+
+
+def cost_curve_plot(costs, curves: dict):
+    """Profit per 1,000 customers as the cost of an email rises, for each policy."""
+    colors = {"Email everyone": s.ARM_COLORS["mens_email"], "Email nobody": s.ARM_COLORS["control"],
+              "X-learner targeting": s.MODEL_COLORS["X-learner"],
+              "T-learner targeting": s.MODEL_COLORS["T-learner"]}
+    fig, ax = plt.subplots(figsize=(10, 4.8))
+    fig.subplots_adjust(top=0.72, left=0.1, right=0.8, bottom=0.14)
+    ax.grid(axis="y", color=s.GRID)
+    ax.axhline(0, color=s.BASELINE, lw=1)
+    for name, vals in curves.items():
+        col = colors.get(name, s.INK)
+        ax.plot(costs, vals, color=col, lw=2.5 if name == "Email everyone" else 2)
+        ax.annotate(name, (costs[-1], vals[-1]), xytext=(8, 0), textcoords="offset points",
+                    color=s.INK_2, fontsize=10, va="center")
+    ax.xaxis.set_major_formatter(plt.FuncFormatter(lambda v, _: money(v, 2)))
+    ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda v, _: money(v, 0)))
+    ax.tick_params(axis="y", colors=s.MUTED)
+    ax.set_xlabel("Cost per email")
+    ax.set_ylabel("Profit per 1,000 customers")
+    return fig, ax

@@ -6,6 +6,7 @@ customers. Models are trained on one half of the data and judged only on the
 other half.
 """
 
+from dataclasses import dataclass
 from typing import Callable, Optional
 
 import numpy as np
@@ -116,6 +117,61 @@ def bootstrap_qini(score, y, t, n_boot: int = 300, seed: int = 0):
     n = len(y)
     return np.array([qini_coefficient(score[idx], y[idx], t[idx])
                      for idx in (rng.integers(0, n, n) for _ in range(n_boot))])
+
+
+def policy_profit(send, y, t, margin: float, cost: float, propensity: float = 0.5) -> float:
+    """Profit per 1,000 customers from a targeting policy, compared with emailing nobody.
+
+    Uses inverse propensity weighting: customers whose actual group matches what
+    the policy would have done stand in for everyone like them.
+    """
+    send, y, t = np.asarray(send, bool), np.asarray(y, float), np.asarray(t)
+    p = np.where(t == 1, propensity, 1 - propensity)
+    value = np.mean(y * (send == (t == 1)) / p)
+    value_none = np.mean(y * (t == 0) / (1 - propensity))
+    return float(1000 * (margin * (value - value_none) - cost * send.mean()))
+
+
+@dataclass
+class PolicyResult:
+    name: str
+    share_sent: float
+    profit: float
+    low: float
+    high: float
+
+
+def evaluate_policies(policies: dict, y, t, margin: float, cost: float, n_boot: int = 1000,
+                      seed: int = 0, propensity: float = 0.5) -> pd.DataFrame:
+    """Profit per 1,000 customers for several policies, with paired bootstrap intervals.
+
+    Also reports each policy's difference from the first policy (the reference),
+    resampled together so the comparison is fair.
+    """
+    rng = np.random.default_rng(seed)
+    y, t = np.asarray(y, float), np.asarray(t)
+    names = list(policies)
+    n = len(y)
+    boots = {k: [] for k in names}
+    for _ in range(n_boot):
+        idx = rng.integers(0, n, n)
+        for k in names:
+            boots[k].append(policy_profit(np.asarray(policies[k])[idx], y[idx], t[idx],
+                                          margin, cost, propensity))
+    ref = np.array(boots[names[0]])
+    rows = []
+    for k in names:
+        b = np.array(boots[k])
+        diff = b - ref
+        rows.append({
+            "policy": k,
+            "share_sent": float(np.mean(policies[k])),
+            "profit": policy_profit(policies[k], y, t, margin, cost, propensity),
+            "low": float(np.quantile(b, 0.025)), "high": float(np.quantile(b, 0.975)),
+            "vs_reference": float(diff.mean()),
+            "vs_low": float(np.quantile(diff, 0.025)), "vs_high": float(np.quantile(diff, 0.975)),
+        })
+    return pd.DataFrame(rows).set_index("policy")
 
 
 def segment_effects(df: pd.DataFrame, segments: dict, metric: str, arm: str,

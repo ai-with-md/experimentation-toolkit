@@ -2,8 +2,9 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from exptoolkit.uplift import (TLearner, XLearner, cross_fit_scores, qini_coefficient,
-                               qini_curve, segment_effects, split_qini)
+from exptoolkit.uplift import (TLearner, XLearner, cross_fit_scores, evaluate_policies,
+                               policy_profit, qini_coefficient, qini_curve, segment_effects,
+                               split_qini)
 
 
 def _heterogeneous(n=8_000, seed=0):
@@ -43,6 +44,23 @@ def test_cross_fit_scores_every_customer_out_of_fold():
     x, y, t = _heterogeneous(n=2_000, seed=4)
     scores = cross_fit_scores(TLearner, x, y, t, n_folds=2, seed=0)
     assert scores.shape == y.shape and np.isfinite(scores).all()
+
+
+def test_policy_profit_matches_simple_difference_for_email_everyone():
+    rng = np.random.default_rng(5)
+    t = rng.integers(0, 2, 20_000)
+    y = rng.exponential(1.0, 20_000) + 0.5 * t
+    profit = policy_profit(np.ones(len(y), bool), y, t, margin=0.4, cost=0.1)
+    expected = 1000 * (0.4 * (y[t == 1].mean() - y[t == 0].mean()) - 0.1)
+    assert profit == pytest.approx(expected, rel=0.05)
+    assert policy_profit(np.zeros(len(y), bool), y, t, 0.4, 0.1) == pytest.approx(0)
+
+
+def test_targeting_wins_when_only_some_customers_respond():
+    x, y, t = _heterogeneous(seed=6)
+    policies = {"everyone": np.ones(len(y), bool), "responders": x[:, 0] > 0}
+    table = evaluate_policies(policies, y, t, margin=1.0, cost=0.8, n_boot=200)
+    assert table.loc["responders", "profit"] > table.loc["everyone", "profit"]
 
 
 def test_segment_effects_and_split_qini_shapes():
