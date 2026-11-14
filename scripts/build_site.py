@@ -135,13 +135,49 @@ def _principles(readme: str) -> list:
     return [line.split(". ", 1)[1] for line in section.splitlines() if re.match(r"^\d+\. ", line)]
 
 
+NAV_CSS = (
+    "position:sticky;top:0;z-index:10;display:flex;flex-wrap:wrap;gap:8px 20px;align-items:center;"
+    "justify-content:space-between;padding:12px 16px;background:#0b0b0f;border-bottom:1px solid #24232b;"
+    "font:600 14px 'Avenir Next',Avenir,'Segoe UI',system-ui,sans-serif"
+)
+LINK_CSS = "color:#b9b5c2;text-decoration:none"
+
+
+def _notebook_title(nb) -> str:
+    """The notebook's first heading, without its markdown and spacing marks."""
+    for cell in nb.cells:
+        if cell.cell_type == "markdown":
+            first = cell.source.strip().splitlines()[0]
+            return re.sub(r"\s+", " ", first.lstrip("# ").replace("&nbsp;", " ")).strip()
+    return "Notebook"
+
+
+def _nav(prev_page, next_page) -> str:
+    def link(target, label):
+        if target is None:
+            return ""
+        return f'<a href="{target[0]}.html" style="{LINK_CSS}">{label} {html.escape(target[1])}</a>'
+
+    return (f'<nav style="{NAV_CSS}">'
+            f'<a href="../index.html" style="color:#f4f1ea;text-decoration:none">experimentation-toolkit</a>'
+            f'<span style="display:flex;flex-wrap:wrap;gap:8px 20px">'
+            f'{link(prev_page, "Previous:")}{link(next_page, "Next:")}'
+            f'<a href="{REPO_URL}" style="{LINK_CSS}">GitHub</a></span></nav>')
+
+
 def build_notebooks() -> None:
     exporter = HTMLExporter(template_name="lab", theme="dark")
     out = SITE / "notebooks"
     out.mkdir(parents=True, exist_ok=True)
-    for path in sorted((ROOT / "notebooks").glob("*.ipynb")):
-        body, _ = exporter.from_notebook_node(nbformat.read(path, as_version=4))
-        (out / f"{path.stem}.html").write_text(body)
+    paths = sorted((ROOT / "notebooks").glob("*.ipynb"))
+    notebooks = [nbformat.read(p, as_version=4) for p in paths]
+    pages = [(p.stem, _notebook_title(nb)) for p, nb in zip(paths, notebooks)]
+    for i, (nb, (stem, title)) in enumerate(zip(notebooks, pages)):
+        resources = {"metadata": {"name": f"{title} | Experimentation Toolkit"}}
+        body, _ = exporter.from_notebook_node(nb, resources=resources)
+        nav = _nav(pages[i - 1] if i > 0 else None, pages[i + 1] if i + 1 < len(pages) else None)
+        body = re.sub(r"(<body[^>]*>)", lambda m: m.group(1) + nav, body, count=1)
+        (out / f"{stem}.html").write_text(body)
 
 
 def build_memo() -> None:
