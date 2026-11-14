@@ -17,6 +17,7 @@ from nbconvert import HTMLExporter
 ROOT = Path(__file__).resolve().parent.parent
 SITE = ROOT / "site"
 REPO_URL = "https://github.com/ai-with-md/experimentation-toolkit"
+SITE_URL = "https://ai-with-md.github.io/experimentation-toolkit/"
 PROFILE_URL = "https://github.com/ai-with-md"
 
 CSS = """
@@ -88,6 +89,7 @@ PAGE = """<!doctype html>
 <meta name="description" content="{description}">
 <meta property="og:title" content="{title}">
 <meta property="og:description" content="{description}">
+<link rel="canonical" href="{canonical}">
 <style>{css}</style>
 </head>
 <body>
@@ -185,7 +187,7 @@ def build_memo() -> None:
     body = f'<article class="memo">{mistune.html(memo)}</article>'
     (SITE / "memo.html").write_text(PAGE.format(
         title="Decision memo: Hillstrom email test", description=DESCRIPTION, css=CSS,
-        home="index.html", repo=REPO_URL, profile=PROFILE_URL, body=body))
+        canonical=SITE_URL + "memo.html", home="index.html", repo=REPO_URL, profile=PROFILE_URL, body=body))
 
 
 def build_index() -> None:
@@ -232,8 +234,22 @@ def build_index() -> None:
 </section>
 """
     (SITE / "index.html").write_text(PAGE.format(
-        title="Experimentation Toolkit", description=DESCRIPTION, css=CSS, home="index.html",
+        title="Experimentation Toolkit", description=DESCRIPTION, css=CSS, canonical=SITE_URL,
+        home="index.html",
         repo=REPO_URL, profile=PROFILE_URL, body=body))
+
+
+def build_sitemap() -> None:
+    """sitemap.xml listing every page, to submit in Google Search Console.
+
+    No robots.txt: crawlers only read one at the domain root, not inside a project site.
+    """
+    pages = ["", "memo.html"] + [f"notebooks/{p.name}" for p in sorted((SITE / "notebooks").glob("*.html"))]
+    urls = "\n".join(f"  <url><loc>{SITE_URL}{page}</loc></url>" for page in pages)
+    (SITE / "sitemap.xml").write_text(
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+        f"{urls}\n</urlset>\n")
 
 
 def main() -> None:
@@ -244,6 +260,7 @@ def main() -> None:
     build_notebooks()
     build_memo()
     build_index()
+    build_sitemap()
     print(f"Built {len(list((SITE / 'notebooks').glob('*.html')))} notebooks, memo and index in {SITE.name}/")
 
 

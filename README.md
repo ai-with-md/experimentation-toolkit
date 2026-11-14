@@ -126,4 +126,4 @@ Every chart uses one shared style (`exptoolkit/style.py`): each group keeps the 
 
 ## Contributing
 
-Ideas for new modules, other public datasets, or a method that fails an A/A test on your data are all welcome. Open an issue or a pull request.
+Ideas for new modules, other public datasets, or a method that fails an A/A test on your data are all welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for how to set up and what makes a good pull request.
