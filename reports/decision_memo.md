@@ -1,6 +1,6 @@
 # Decision memo: Hillstrom email test
 
-**Decision: send the men's email** to customers like the ones in this test (people who bought in the past year).
+**Decision: send the men's email to everyone on the list** of customers like the ones in this test (people who bought in the past year).
 
 ## Why
 
@@ -28,7 +28,13 @@
 - **Two weeks only.** Longer-term effects on repeat buying are unknown.
 - **Margin and email cost are assumptions.** The decision holds across a wide range, but should be confirmed with finance.
 
+## Who should get it
+
+**Everyone on the list.** Two uplift models could not tell strong responders from weak ones on customers they had not seen (notebook 08), and emailing everyone made more profit than every targeting policy tested (notebook 09). The email pays for itself in every customer segment we can measure.
+
 ## Next
 
-- Find out who the email actually changes, so it can go only to the customers it helps (notebook 08).
+- Measure unsubscribes in the first send and add them to the email's cost.
 - In the next test, log each customer's spend in the weeks before the send, so variance reduction can work.
+- Consider purchases as the primary metric: it needs about half as many customers as revenue to catch the same lift (notebook 04).
+- Revisit targeting only if the email gets much more expensive, or a test has many more buyers (notebook 09).
