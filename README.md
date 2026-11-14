@@ -8,7 +8,7 @@
 
 ![Checking every day turns a 5% false alarm rate into 21%](docs/figures/peeking.png)
 
-**New here?** Read the one-page [decision memo](reports/decision_memo.md) for the answer a business would act on, then [notebook 05](notebooks/05_peeking.ipynb) for the most surprising result.
+**New here?** Browse the [project website](https://ai-with-md.github.io/experimentation-toolkit/), read the one-page [decision memo](reports/decision_memo.md) for the answer a business would act on, then [notebook 05](notebooks/05_peeking.ipynb) for the most surprising result.
 
 ## What most A/B tests get wrong, measured on real data
 
@@ -119,7 +119,7 @@ plans/          decision plans the notebooks read
 tests/          unit tests, run on every push
 reports/        decision memos written by the notebooks
 docs/figures/   charts used in this README
-scripts/        data download
+scripts/        data download and website build
 ```
 
 Every chart uses one shared style (`exptoolkit/style.py`): each group keeps the same colour everywhere, uncertainty is always shown, and titles state the finding.
