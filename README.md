@@ -18,7 +18,7 @@
 | Read "not significant" as "no effect" | This test would have missed a worthwhile lift **5 times out of 6** | [04](notebooks/04_power_by_simulation.ipynb) |
 | Expect CUPED to shrink the noise | A year of purchase history removed **under 0.1%** of revenue variance | [06](notebooks/06_readout.ipynb) |
 | Build an uplift model to target who gets the email | Two uplift models ranked customers **no better than random**, and emailing everyone beat every targeting policy | [08](notebooks/08_uplift.ipynb), [09](notebooks/09_targeting_policy.ipynb) |
-| Trust difference-in-differences without checking the trends | A fake 1980 "policy" showed a **12-pack effect** when nothing happened | [10](notebooks/10_difference_in_differences.ipynb) |
+| Trust difference-in-differences without checking the trends | A fake 1980 "policy" showed a 12-pack effect, and DiD overstated Prop 99's real impact by **about 40%** | [10](notebooks/10_difference_in_differences.ipynb), [11](notebooks/11_synthetic_control.ipynb) |
 
 Every number comes from simulation on real customer data, not from a formula's assumptions.
 
@@ -75,7 +75,7 @@ obf_boundaries(n_looks=14)
 | [08](notebooks/08_uplift.ipynb) | Who does the email actually change? (uplift models, Qini curves) | Done |
 | [09](notebooks/09_targeting_policy.ipynb) | Who should get the email at all? (targeting policy in dollars) | Done |
 | [10](notebooks/10_difference_in_differences.ipynb) | What if we could not randomize? (difference-in-differences, event study) | Done |
-| 11 | A better comparison: synthetic control with placebo tests | Next |
+| [11](notebooks/11_synthetic_control.ipynb) | A better comparison: synthetic control with placebo tests | Done |
 
 New modules get added over time. Each one adds reusable code to `exptoolkit/` and its own numbered notebook.
 

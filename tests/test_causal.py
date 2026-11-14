@@ -2,7 +2,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from exptoolkit.causal import did, event_study, load_smoking, placebo_band
+from exptoolkit.causal import (did, event_study, load_smoking, placebo_band, synth_placebos,
+                               synth_weights, synthetic_control)
 
 
 def _panel(effect=-10.0, trend_gap=0.0, seed=0):
@@ -34,8 +35,27 @@ def test_event_study_is_zero_at_reference_and_flags_a_pre_trend():
     assert es.loc[0] > 5          # a steady pre-trend shows up before the reference year
 
 
-def test_placebo_band_is_ordered():
+def test_synth_weights_are_a_proper_blend():
+    rng = np.random.default_rng(2)
+    donors = rng.normal(size=(15, 6))
+    target = donors @ np.array([0.6, 0.4, 0, 0, 0, 0])
+    w = synth_weights(target, donors)
+    assert w.min() >= 0 and w.sum() == pytest.approx(1.0)
+    assert w[:2] == pytest.approx([0.6, 0.4], abs=0.02)
+
+
+def test_synthetic_control_recovers_effect_despite_a_pre_trend():
+    panel = _panel(effect=-10.0)
+    result = synthetic_control(panel, "T", 10)
+    assert result.weights[["A", "B"]].sum() > 0.9
+    assert result.average_effect == pytest.approx(-10.0, abs=1.0)
+    assert result.ratio > 5
+
+
+def test_placebos_cover_every_other_unit():
     panel = _panel()
+    placebos = synth_placebos(panel, "T", 10)
+    assert set(placebos) == set(panel.columns) - {"T"}
     band = placebo_band(panel, "T", lambda d, u: event_study(d, u, reference=9))
     assert (band["low"] <= band["high"]).all()
 

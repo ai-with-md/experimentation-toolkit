@@ -596,3 +596,22 @@ def event_study_plot(es: pd.Series, band: pd.DataFrame, start: int):
     ax.legend(loc="lower right", bbox_to_anchor=(1.0, 1.04), ncol=2, handlelength=1.4)
     return fig, ax
 
+
+def placebo_gaps_plot(result, placebos: dict, start: int):
+    """Gap between actual and synthetic for the treated unit (bright) and every placebo (grey)."""
+    fig, ax = plt.subplots(figsize=(10, 4.8))
+    fig.subplots_adjust(top=0.74, left=0.09, right=0.86, bottom=0.12)
+    ax.grid(axis="y", color=s.GRID)
+    for r in placebos.values():
+        ax.plot(r.gap.index, r.gap.values, color=s.STATE_COLORS["placebo"], lw=1.5, alpha=0.9)
+    ax.axhline(0, color=s.BASELINE, lw=1)
+    g = result.gap
+    ax.plot(g.index, g.values, color=s.STATE_COLORS["treated"], lw=3)
+    ax.annotate(result.unit, (g.index[-1], g.values[-1]), xytext=(8, 0), textcoords="offset points",
+                va="center", color=s.INK, fontsize=10.5, fontweight="bold")
+    ax.annotate(f"{len(placebos)} placebo states", (g.index[-1], 0), xytext=(8, 14),
+                textcoords="offset points", color=s.INK_2, fontsize=10)
+    _policy_marker(ax, start)
+    ax.set_ylabel("Actual minus synthetic (packs per person)")
+    ax.tick_params(axis="y", colors=s.MUTED)
+    return fig, ax
