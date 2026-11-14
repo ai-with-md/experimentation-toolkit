@@ -31,6 +31,14 @@ ARM_LABELS = {
 }
 ARM_ORDER = ["control", "womens_email", "mens_email"]
 
+# Notebooks 10 and 11: the treated state, its comparisons, and placebo states.
+STATE_COLORS = {
+    "treated": HIGHLIGHT,
+    "average": "#B9B5C2",
+    "synthetic": "#3B8FE0",
+    "placebo": "#3A3944",
+}
+
 # Targeting approaches in notebooks 08 and 09.
 MODEL_COLORS = {
     "T-learner": "#3B8FE0",

@@ -1,6 +1,6 @@
 # Experimentation Toolkit
 
-**Is your A/B test telling you the truth?** Decision-first A/B testing in Python: trust checks, A/A calibration, power by simulation, safe peeking, and decisions in dollars, worked end to end on a real 64,000-customer email test.
+**Is your A/B test telling you the truth?** Decision-first A/B testing in Python: trust checks, A/A calibration, power by simulation, safe peeking, and decisions in dollars, worked end to end on a real 64,000-customer email test, plus causal inference when you can't randomize.
 
 [![tests](https://github.com/ai-with-md/experimentation-toolkit/actions/workflows/tests.yml/badge.svg)](https://github.com/ai-with-md/experimentation-toolkit/actions/workflows/tests.yml)
 ![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue)
@@ -18,6 +18,7 @@
 | Read "not significant" as "no effect" | This test would have missed a worthwhile lift **5 times out of 6** | [04](notebooks/04_power_by_simulation.ipynb) |
 | Expect CUPED to shrink the noise | A year of purchase history removed **under 0.1%** of revenue variance | [06](notebooks/06_readout.ipynb) |
 | Build an uplift model to target who gets the email | Two uplift models ranked customers **no better than random**, and emailing everyone beat every targeting policy | [08](notebooks/08_uplift.ipynb), [09](notebooks/09_targeting_policy.ipynb) |
+| Trust difference-in-differences without checking the trends | A fake 1980 "policy" showed a **12-pack effect** when nothing happened | [10](notebooks/10_difference_in_differences.ipynb) |
 
 Every number comes from simulation on real customer data, not from a formula's assumptions.
 
@@ -73,15 +74,18 @@ obf_boundaries(n_looks=14)
 | [07](notebooks/07_decision.ipynb) | Which email should we send, in dollars and risk? ([decision memo](reports/decision_memo.md)) | Done |
 | [08](notebooks/08_uplift.ipynb) | Who does the email actually change? (uplift models, Qini curves) | Done |
 | [09](notebooks/09_targeting_policy.ipynb) | Who should get the email at all? (targeting policy in dollars) | Done |
-| 10 | What if we could not randomize? (difference-in-differences, synthetic controls) | Next |
+| [10](notebooks/10_difference_in_differences.ipynb) | What if we could not randomize? (difference-in-differences, event study) | Done |
+| 11 | A better comparison: synthetic control with placebo tests | Next |
 
 New modules get added over time. Each one adds reusable code to `exptoolkit/` and its own numbered notebook.
 
 ## Data
 
-**Hillstrom email marketing dataset** (MineThatData, 2008). 64,000 customers who bought in the past year were randomly assigned to a men's merchandise email, a women's merchandise email, or no email, and tracked for two weeks: site visits, purchases and spend.
+**Hillstrom email marketing dataset** (MineThatData, 2008). 64,000 customers who bought in the past year were randomly assigned to a men's merchandise email, a women's merchandise email, or no email, and tracked for two weeks: site visits, purchases and spend. Used in notebooks 01 to 09.
 
-The data is not stored in this repo. `scripts/download_data.py` fetches it from the original source.
+**Cigarette sales by US state, 1970 to 2000** (Abadie, Diamond and Hainmueller, 2010). Packs sold per person in California and 38 other states, used to measure the effect of California's Proposition 99 in notebooks 10 and 11.
+
+Neither dataset is stored in this repo. `scripts/download_data.py` fetches both from their public sources.
 
 ## Run the notebooks
 
@@ -100,7 +104,7 @@ Run the tests with `pytest`.
 ## Layout
 
 ```
-exptoolkit/     reusable code: data, decision plans, checks, power, sequential tests, readout, decisions, uplift, charts
+exptoolkit/     reusable code: data, decision plans, checks, power, sequential tests, readout, decisions, uplift, causal, charts
 notebooks/      one notebook per module, outputs saved
 plans/          decision plans the notebooks read
 tests/          unit tests, run on every push

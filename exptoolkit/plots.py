@@ -553,3 +553,46 @@ def cost_curve_plot(costs, curves: dict):
     ax.set_xlabel("Cost per email")
     ax.set_ylabel("Profit per 1,000 customers")
     return fig, ax
+
+
+def _policy_marker(ax, year, label="Prop 99"):
+    ax.axvline(year - 0.5, color=s.INK_2, lw=1, alpha=0.6)
+    ax.text(year - 0.3, ax.get_ylim()[1], f" {label}", color=s.INK_2, fontsize=9.5, va="top")
+
+
+def trend_plot(series: dict, start: int, ylabel: str):
+    """Several yearly lines (name -> (pd.Series, colour key)), with the policy year marked."""
+    fig, ax = plt.subplots(figsize=(10, 4.8))
+    fig.subplots_adjust(top=0.74, left=0.09, right=0.84, bottom=0.12)
+    ax.grid(axis="y", color=s.GRID)
+    for name, (ser, key) in series.items():
+        col = s.STATE_COLORS[key]
+        ax.plot(ser.index, ser.values, color=col, lw=2.5 if key == "treated" else 2)
+        ax.annotate(name, (ser.index[-1], ser.values[-1]), xytext=(8, 0),
+                    textcoords="offset points", va="center", color=s.INK_2, fontsize=10)
+    ax.set_ylim(0, None)
+    _policy_marker(ax, start)
+    ax.set_ylabel(ylabel)
+    ax.tick_params(axis="y", colors=s.MUTED)
+    return fig, ax
+
+
+def event_study_plot(es: pd.Series, band: pd.DataFrame, start: int):
+    """Gap between treated unit and the average of the rest, relative to the last pre-policy year."""
+    fig, ax = plt.subplots(figsize=(10, 4.8))
+    fig.subplots_adjust(top=0.74, left=0.09, right=0.97, bottom=0.12)
+    ax.grid(axis="y", color=s.GRID)
+    ax.fill_between(band.index, band["low"], band["high"], color=s.STATE_COLORS["placebo"],
+                    alpha=0.6, lw=0, label="Middle 90% of placebo states")
+    ax.axhline(0, color=s.BASELINE, lw=1)
+    pre, post = es[es.index < start], es[es.index >= start]
+    ax.plot(es.index, es.values, color=s.STATE_COLORS["treated"], lw=2)
+    _dot(ax, pre.index, pre.values, s.STATE_COLORS["treated"], size=45)
+    _dot(ax, post.index, post.values, s.STATE_COLORS["treated"], size=45)
+    _policy_marker(ax, start)
+    ax.set_ylabel("Gap vs other states, relative to 1988")
+    ax.tick_params(axis="y", colors=s.MUTED)
+    ax.plot([], [], color=s.STATE_COLORS["treated"], lw=2, marker="o", label="California")
+    ax.legend(loc="lower right", bbox_to_anchor=(1.0, 1.04), ncol=2, handlelength=1.4)
+    return fig, ax
+
